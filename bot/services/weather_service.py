@@ -4,8 +4,7 @@ import html
 from config import logger
 
 # OpenWeatherMap API endpoint and key
-WEATHER_API_URL = "https://api.openweathermap.org/data/2.5/weather"
-WEATHER_API_KEY = "8da7e45ae63a635d0644c9c2227341e4"  # Free API key for demo purposes
+from config import WEATHER_API_URL, WEATHER_API_KEY
 
 async def get_weather(location: str) -> str:
     """Get current weather for a location"""

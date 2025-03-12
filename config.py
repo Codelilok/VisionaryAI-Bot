@@ -24,7 +24,7 @@ IMAGE_MODEL = "stabilityai/stable-diffusion-2-1"
 CODE_MODEL = "bigcode/starcoder"
 
 # Weather API
-WEATHER_API_KEY = os.environ.get("WEATHER_API_KEY", "8da7e45ae63a635d0644c9c2227341e4")  # Default demo key
+WEATHER_API_KEY = os.environ.get("WEATHER_API_KEY", "cd95bfc489f09469cb862762755b86bd")  # User's API key
 WEATHER_API_URL = "https://api.openweathermap.org/data/2.5/weather"
 
 # Rate Limits (requests per minute)
