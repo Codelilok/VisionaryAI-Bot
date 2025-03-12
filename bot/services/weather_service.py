@@ -1,47 +1,43 @@
 
 import aiohttp
-import html
-from config import logger
-
-# OpenWeatherMap API endpoint and key
-from config import WEATHER_API_URL, WEATHER_API_KEY
+import json
+from config import logger, WEATHER_API_KEY, WEATHER_API_URL
 
 async def get_weather(location: str) -> str:
     """Get current weather for a location"""
-    logger.info(f"Getting weather for location: {location}")
-    
     try:
+        if not location:
+            return "Please provide a location to check the weather."
+        
+        # Make API request
+        params = {
+            "q": location,
+            "appid": WEATHER_API_KEY,
+            "units": "metric"  # Use metric units (Celsius)
+        }
+        
         async with aiohttp.ClientSession() as session:
-            params = {
-                "q": location,
-                "appid": WEATHER_API_KEY,
-                "units": "metric"  # For Celsius
-            }
-            
             async with session.get(WEATHER_API_URL, params=params) as response:
                 if response.status != 200:
-                    logger.error(f"Weather API error: {response.status}")
-                    return "Sorry, I couldn't get the weather information for that location."
+                    return f"Sorry, I couldn't find weather data for {location}. Please check the spelling and try again."
                 
                 data = await response.json()
                 
                 # Extract relevant weather information
-                city = data["name"]
-                country = data["sys"]["country"]
-                temp = data["main"]["temp"]
-                feels_like = data["main"]["feels_like"]
-                description = data["weather"][0]["description"]
-                humidity = data["main"]["humidity"]
-                wind_speed = data["wind"]["speed"]
+                weather_description = data['weather'][0]['description']
+                temperature = data['main']['temp']
+                feels_like = data['main']['feels_like']
+                humidity = data['main']['humidity']
+                wind_speed = data['wind']['speed']
                 
-                # Format the response
+                # Format weather information
                 weather_info = (
-                    f"🌦 <b>Weather for {html.escape(city)}, {html.escape(country)}</b>\n\n"
-                    f"🌡 Temperature: {temp}°C\n"
-                    f"🤔 Feels like: {feels_like}°C\n"
-                    f"☁️ Conditions: {html.escape(description.capitalize())}\n"
-                    f"💧 Humidity: {humidity}%\n"
-                    f"💨 Wind speed: {wind_speed} m/s"
+                    f"🌍 <b>Weather for {data['name']}, {data.get('sys', {}).get('country', '')}</b>\n\n"
+                    f"🌤 <b>Condition:</b> {weather_description.capitalize()}\n"
+                    f"🌡 <b>Temperature:</b> {temperature}°C\n"
+                    f"🌡 <b>Feels like:</b> {feels_like}°C\n"
+                    f"💧 <b>Humidity:</b> {humidity}%\n"
+                    f"💨 <b>Wind speed:</b> {wind_speed} m/s"
                 )
                 
                 return weather_info

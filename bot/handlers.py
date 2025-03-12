@@ -21,7 +21,8 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         'who developed you' in message_lower or
         'who built you' in message_lower or
         'your creator' in message_lower or
-        'who owns you' in message_lower):
+        'who owns you' in message_lower or
+        'creator' in message_lower):
         await update.message.reply_text("I was created by Ecowsco Gh. 👨‍💻")
         return
 
