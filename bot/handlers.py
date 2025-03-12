@@ -101,21 +101,11 @@ async def code_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     try:
         response = await queue_manager.enqueue('code', get_code_assistance, query)
+        # Send response with proper code formatting
         await update.message.reply_text(response, parse_mode='HTML')
         logger.info(f"Successfully sent code assistance to user {update.effective_user.id}")
     except Exception as e:
         logger.error(f"Error in code command for user {update.effective_user.id}: {str(e)}")
-        await update.message.reply_text("Sorry, I couldn't process your code question.")
-        return
-    
-    query = ' '.join(context.args)
-    await update.message.reply_text("Processing your code question... This may take a moment.")
-    
-    try:
-        code_response = await get_code_assistance(query)
-        await update.message.reply_text(f"```\n{code_response}\n```")
-    except Exception as e:
-        logger.error(f"Error in code command: {str(e)}")
         await update.message.reply_text("Sorry, I couldn't process your code question. Please try again later.")
 
 def setup_handlers():

@@ -33,6 +33,7 @@ async def get_code_assistance(query: str) -> str:
             
             return formatted_response
 import aiohttp
+import html
 from config import HUGGINGFACE_TOKEN, HUGGINGFACE_API_URL, CODE_MODEL, logger
 
 async def get_code_assistance(query: str) -> str:
@@ -43,7 +44,7 @@ async def get_code_assistance(query: str) -> str:
         query: The coding question or problem
     
     Returns:
-        str: The generated code solution or explanation
+        str: The generated code solution or explanation, formatted with HTML
     """
     logger.info(f"Generating code assistance for query: {query}")
     
@@ -65,7 +66,11 @@ async def get_code_assistance(query: str) -> str:
                     return "I'm having trouble connecting to the code assistance service. Please try again later."
                 
                 result = await response.json()
-                return result[0]['generated_text'].replace(enhanced_query, "").strip()
+                code_content = result[0]['generated_text'].replace(enhanced_query, "").strip()
+                
+                # Format the response with HTML code tags for proper display in Telegram
+                formatted_response = f"<pre><code>{html.escape(code_content)}</code></pre>"
+                return formatted_response
     
     except Exception as e:
         logger.error(f"Error in code assistance: {str(e)}")
