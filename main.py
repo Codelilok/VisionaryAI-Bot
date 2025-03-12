@@ -15,10 +15,13 @@ def webhook():
     """Handle incoming updates from Telegram"""
     try:
         update = request.get_json()
-        if update:
-            handle_telegram_update(update)
-            return Response(status=200)
-        return Response(status=400)
+        if not update:
+            logger.error("Received empty update")
+            return Response(status=400)
+
+        logger.debug(f"Received update: {update}")
+        handle_telegram_update(update)
+        return Response(status=200)
     except Exception as e:
         logger.error(f"Error processing webhook: {str(e)}")
         return Response(status=500)
