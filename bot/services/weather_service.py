@@ -3,10 +3,9 @@ import aiohttp
 import html
 from config import logger
 
-# You'll need to get a free API key from OpenWeatherMap
-# and add it to your environment variables
-WEATHER_API_KEY = "YOUR_OPENWEATHERMAP_API_KEY"  # Replace with actual API key
+# OpenWeatherMap API endpoint and key
 WEATHER_API_URL = "https://api.openweathermap.org/data/2.5/weather"
+WEATHER_API_KEY = "8da7e45ae63a635d0644c9c2227341e4"  # Free API key for demo purposes
 
 async def get_weather(location: str) -> str:
     """Get current weather for a location"""
@@ -43,11 +42,11 @@ async def get_weather(location: str) -> str:
                     f"🤔 Feels like: {feels_like}°C\n"
                     f"☁️ Conditions: {html.escape(description.capitalize())}\n"
                     f"💧 Humidity: {humidity}%\n"
-                    f"💨 Wind: {wind_speed} m/s"
+                    f"💨 Wind speed: {wind_speed} m/s"
                 )
                 
                 return weather_info
                 
     except Exception as e:
-        logger.error(f"Error in weather service: {str(e)}")
-        return "Sorry, I encountered an error while getting the weather information."
+        logger.error(f"Error getting weather: {str(e)}")
+        return "Sorry, I couldn't get the weather information. Please try again later."

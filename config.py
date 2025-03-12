@@ -23,6 +23,10 @@ TEXT_MODEL = "facebook/opt-1.3b"
 IMAGE_MODEL = "stabilityai/stable-diffusion-2-1"
 CODE_MODEL = "bigcode/starcoder"
 
+# Weather API
+WEATHER_API_KEY = os.environ.get("WEATHER_API_KEY", "8da7e45ae63a635d0644c9c2227341e4")  # Default demo key
+WEATHER_API_URL = "https://api.openweathermap.org/data/2.5/weather"
+
 # Rate Limits (requests per minute)
 RATE_LIMIT = {
     "text": 30,
