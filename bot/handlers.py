@@ -11,6 +11,7 @@ queue_manager = QueueManager()
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Welcome new users and show available commands"""
+    logger.info(f"Received /start command from user {update.effective_user.id}")
     user_name = update.effective_user.first_name
     welcome_message = (
         f"👋 Welcome {user_name} to VisionaryAI Bot!\n\n"
@@ -23,11 +24,14 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "Try starting with /chat Hello!"
     )
     await update.message.reply_text(welcome_message)
+    logger.info(f"Sent welcome message to user {update.effective_user.id}")
 
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    logger.info(f"Received /help command from user {update.effective_user.id}")
     await start(update, context)
 
 async def chat_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    logger.info(f"Received /chat command from user {update.effective_user.id}")
     if not context.args:
         await update.message.reply_text("Please provide a message to chat about! Example: /chat How are you?")
         return
@@ -38,11 +42,13 @@ async def chat_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         response = await queue_manager.enqueue('text', generate_text_response, message)
         await update.message.reply_text(response)
+        logger.info(f"Successfully sent chat response to user {update.effective_user.id}")
     except Exception as e:
-        logger.error(f"Error in chat command: {str(e)}")
+        logger.error(f"Error in chat command for user {update.effective_user.id}: {str(e)}")
         await update.message.reply_text("Sorry, I encountered an error while processing your request.")
 
 async def image_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    logger.info(f"Received /image command from user {update.effective_user.id}")
     if not context.args:
         await update.message.reply_text("Please provide a prompt for image generation! Example: /image sunset over mountains")
         return
@@ -53,22 +59,26 @@ async def image_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         image_url = await queue_manager.enqueue('image', generate_image, prompt)
         await update.message.reply_photo(image_url)
+        logger.info(f"Successfully sent generated image to user {update.effective_user.id}")
     except Exception as e:
-        logger.error(f"Error in image command: {str(e)}")
+        logger.error(f"Error in image command for user {update.effective_user.id}: {str(e)}")
         await update.message.reply_text("Sorry, I couldn't generate the image.")
 
 async def news_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    logger.info(f"Received /news command from user {update.effective_user.id}")
     topic = ' '.join(context.args) if context.args else 'technology'
     await update.message.reply_text("Fetching news... 📰")
 
     try:
         news = await queue_manager.enqueue('news', get_news, topic)
         await update.message.reply_text(news, parse_mode='HTML')
+        logger.info(f"Successfully sent news about {topic} to user {update.effective_user.id}")
     except Exception as e:
-        logger.error(f"Error in news command: {str(e)}")
+        logger.error(f"Error in news command for user {update.effective_user.id}: {str(e)}")
         await update.message.reply_text("Sorry, I couldn't fetch the news.")
 
 async def code_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    logger.info(f"Received /code command from user {update.effective_user.id}")
     if not context.args:
         await update.message.reply_text("Please provide a coding question! Example: /code How to sort a list in Python?")
         return
@@ -79,19 +89,22 @@ async def code_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         response = await queue_manager.enqueue('code', get_code_assistance, query)
         await update.message.reply_text(response, parse_mode='HTML')
+        logger.info(f"Successfully sent code assistance to user {update.effective_user.id}")
     except Exception as e:
-        logger.error(f"Error in code command: {str(e)}")
+        logger.error(f"Error in code command for user {update.effective_user.id}: {str(e)}")
         await update.message.reply_text("Sorry, I couldn't process your code question.")
 
 def setup_handlers():
     """Set up all command handlers for the bot"""
     from bot import bot
+    logger.info("Setting up command handlers...")
     bot.add_handler(CommandHandler("start", start))
     bot.add_handler(CommandHandler("help", help_command))
     bot.add_handler(CommandHandler("chat", chat_command))
     bot.add_handler(CommandHandler("image", image_command))
     bot.add_handler(CommandHandler("news", news_command))
     bot.add_handler(CommandHandler("code", code_command))
+    logger.info("Command handlers setup completed")
 
 def handle_telegram_update(update):
     """Process incoming updates from Telegram"""

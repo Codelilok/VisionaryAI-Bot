@@ -6,7 +6,7 @@ app = Flask(__name__)
 @app.route('/health', methods=['GET'])
 def health_check():
     """Health check endpoint"""
-    return jsonify({"status": "healthy", "message": "VisionaryAI bot is running"}), 200
+    return jsonify({"status": "healthy", "message": "VisionaryAI web interface is running"}), 200
 
 @app.route('/')
 def index():

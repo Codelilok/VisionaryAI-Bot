@@ -2,21 +2,27 @@
 Bot initialization module.
 Provides the core bot instance and startup functionality.
 """
-from telegram.ext import Application
+from telegram.ext import ApplicationBuilder
 from config import TELEGRAM_TOKEN, logger
 
 # Initialize the bot application
-bot = Application.builder().token(TELEGRAM_TOKEN).build()
+bot = ApplicationBuilder().token(TELEGRAM_TOKEN).build()
 
 # Start the bot
 async def start_bot():
+    """Start the bot with polling"""
     try:
         # Import handlers here to avoid circular imports
         from bot.handlers import setup_handlers
         setup_handlers()
 
-        logger.info("Starting bot with polling...")
-        await bot.run_polling(drop_pending_updates=True)
+        logger.info("Starting bot...")
+        await bot.initialize()  # Initialize first
+        await bot.start()  # Then start the bot
+        await bot.updater.start_polling()  # Start polling
+
+        logger.info("Bot started successfully")
+
     except Exception as e:
         logger.error(f"Error during bot startup: {str(e)}")
         raise
