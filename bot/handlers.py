@@ -1,6 +1,5 @@
 from telegram import Update
 from telegram.ext import ContextTypes, CommandHandler, MessageHandler, filters
-from bot import bot
 from bot.services.ai_service import generate_text_response
 from bot.services.image_service import generate_image
 from bot.services.news_service import get_news
@@ -86,6 +85,7 @@ async def code_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 def setup_handlers():
     """Set up all command handlers for the bot"""
+    from bot import bot
     bot.add_handler(CommandHandler("start", start))
     bot.add_handler(CommandHandler("help", help_command))
     bot.add_handler(CommandHandler("chat", chat_command))
@@ -96,6 +96,7 @@ def setup_handlers():
 def handle_telegram_update(update):
     """Process incoming updates from Telegram"""
     try:
+        from bot import bot
         bot.process_update(Update.de_json(update, bot.bot))
     except Exception as e:
         logger.error(f"Error processing update: {str(e)}")

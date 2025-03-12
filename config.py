@@ -7,7 +7,7 @@ logger = logging.getLogger(__name__)
 
 # Telegram Configuration
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
-WEBHOOK_URL = os.getenv("WEBHOOK_URL")
+WEBHOOK_URL = os.getenv("REPL_SLUG", "https://visionary-ai-bot.repl.co")  # Default to Replit URL
 
 # API Keys
 HUGGINGFACE_TOKEN = os.getenv("HUGGINGFACE_TOKEN")

@@ -1,5 +1,8 @@
 from flask import Flask, request, Response, jsonify
 import logging
+import asyncio
+import threading
+from bot import bot, start_bot
 from bot.handlers import handle_telegram_update
 from config import TELEGRAM_TOKEN, logger
 
@@ -39,6 +42,20 @@ def index():
             "Code assistance"
         ]
     })
+
+# Initialize the bot without blocking Flask
+def init_bot_async():
+    try:
+        asyncio.run(start_bot())
+        logger.info("Bot initialized successfully")
+    except Exception as e:
+        logger.error(f"Failed to initialize bot: {str(e)}")
+
+# Start bot initialization in background thread
+thread = threading.Thread(target=init_bot_async)
+thread.daemon = True
+thread.start()
+logger.info("Bot initialization started in background thread")
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
