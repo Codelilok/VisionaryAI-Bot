@@ -19,10 +19,11 @@ async def start_bot():
         logger.info("Initializing bot...")
         await bot.initialize()
 
-        # Start polling
+        # Start the bot
         logger.info("Starting bot polling...")
         await bot.start()
-        await bot.updater.start_polling()
+        await bot.updater.start_polling(allowed_updates=["message", "callback_query"])
+        await bot.updater.idle()  # Keep the bot running
         logger.info("Bot started successfully with polling")
     except Exception as e:
         logger.error(f"Error during bot startup: {str(e)}")

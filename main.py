@@ -28,7 +28,10 @@ def index():
 # Initialize the bot without blocking Flask
 def init_bot_async():
     try:
-        asyncio.run(start_bot())
+        # Create new event loop for the thread
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        loop.run_until_complete(start_bot())
         logger.info("Bot initialized successfully")
     except Exception as e:
         logger.error(f"Failed to initialize bot: {str(e)}")
