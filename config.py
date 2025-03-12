@@ -7,15 +7,6 @@ logger = logging.getLogger(__name__)
 
 # Telegram Configuration
 TELEGRAM_TOKEN = os.environ.get("TELEGRAM_TOKEN")
-REPL_SLUG = os.environ.get("REPL_SLUG")
-REPL_OWNER = os.environ.get("REPL_OWNER")
-
-if not all([REPL_SLUG, REPL_OWNER]):
-    logger.error(f"Missing Replit environment variables: REPL_SLUG={REPL_SLUG}, REPL_OWNER={REPL_OWNER}")
-    WEBHOOK_URL = "https://visionary-ai-bot.repl.co"  # Fallback URL
-else:
-    WEBHOOK_URL = f"https://{REPL_SLUG}.{REPL_OWNER}.repl.co"
-    logger.info(f"Webhook URL configured as: {WEBHOOK_URL}")
 
 # API Keys
 HUGGINGFACE_TOKEN = os.environ.get("HUGGINGFACE_TOKEN")

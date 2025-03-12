@@ -1,10 +1,8 @@
-from flask import Flask, request, Response, jsonify
-import logging
+from flask import Flask, jsonify
 import asyncio
 import threading
-from bot import bot, start_bot
-from bot.handlers import handle_telegram_update
-from config import TELEGRAM_TOKEN, logger
+from bot import start_bot
+from config import logger
 
 app = Flask(__name__)
 
@@ -12,22 +10,6 @@ app = Flask(__name__)
 def health_check():
     """Health check endpoint"""
     return jsonify({"status": "healthy", "message": "VisionaryAI bot is running"}), 200
-
-@app.route(f'/webhook/{TELEGRAM_TOKEN}', methods=['POST'])
-def webhook():
-    """Handle incoming updates from Telegram"""
-    try:
-        update = request.get_json()
-        if not update:
-            logger.error("Received empty update")
-            return Response(status=400)
-
-        logger.debug(f"Received update: {update}")
-        handle_telegram_update(update)
-        return Response(status=200)
-    except Exception as e:
-        logger.error(f"Error processing webhook: {str(e)}")
-        return Response(status=500)
 
 @app.route('/')
 def index():
