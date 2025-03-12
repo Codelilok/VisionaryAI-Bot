@@ -1,7 +1,4 @@
 from flask import Flask, jsonify
-import asyncio
-import threading
-from bot import start_bot
 from config import logger
 
 app = Flask(__name__)
@@ -24,23 +21,6 @@ def index():
             "Code assistance"
         ]
     })
-
-# Initialize the bot without blocking Flask
-def init_bot_async():
-    try:
-        # Create new event loop for the thread
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        loop.run_until_complete(start_bot())
-        logger.info("Bot initialized successfully")
-    except Exception as e:
-        logger.error(f"Failed to initialize bot: {str(e)}")
-
-# Start bot initialization in background thread
-thread = threading.Thread(target=init_bot_async)
-thread.daemon = True
-thread.start()
-logger.info("Bot initialization started in background thread")
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
