@@ -1,9 +1,6 @@
 from telegram import Update
 from telegram.ext import ContextTypes, CommandHandler, MessageHandler, filters
-from bot.services.ai_service import generate_text_response
-from bot.services.image_service import generate_image
-from bot.services.news_service import get_news
-from bot.services.code_service import get_code_assistance
+from bot.services import generate_text_response, generate_image, get_news, get_code_assistance
 from bot.queue_manager import QueueManager
 from config import logger
 
@@ -11,19 +8,19 @@ queue_manager = QueueManager()
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle direct messages without command"""
-    logger.info(f"Received message from user {update.effective_user.id}")
+    if not update.message or not update.message.text:
+        return
 
-    # Ignore commands
     if update.message.text.startswith('/'):
         return
 
     try:
-        response = await queue_manager.enqueue('text', generate_text_response, update.message.text)
+        logger.info(f"Processing message: {update.message.text}")
+        response = await generate_text_response(update.message.text)
         await update.message.reply_text(response)
-        logger.info(f"Successfully sent response to user {update.effective_user.id}")
     except Exception as e:
-        logger.error(f"Error in message handler for user {update.effective_user.id}: {str(e)}")
-        await update.message.reply_text("Sorry, I encountered an error while processing your request.")
+        logger.error(f"Error in message handler: {str(e)}")
+        await update.message.reply_text("Sorry, I encountered an error. Please try again.")
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Welcome new users and show available commands"""
@@ -64,7 +61,7 @@ async def chat_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("Sorry, I encountered an error while processing your request.")
 
 async def image_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    logger.info(f"Received /image command from user {update.effective_user.id}")
+    """Generate an image from prompt"""
     if not context.args:
         await update.message.reply_text("Please provide a prompt for image generation! Example: /image sunset over mountains")
         return
@@ -73,12 +70,12 @@ async def image_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("Generating image... 🎨")
 
     try:
-        image_bytes = await queue_manager.enqueue('image', generate_image, prompt)
+        logger.info(f"Generating image for prompt: {prompt}")
+        image_bytes = await generate_image(prompt)
         await update.message.reply_photo(photo=image_bytes)
-        logger.info(f"Successfully sent generated image to user {update.effective_user.id}")
     except Exception as e:
-        logger.error(f"Error in image command for user {update.effective_user.id}: {str(e)}")
-        await update.message.reply_text("Sorry, I couldn't generate the image.")
+        logger.error(f"Error in image command: {str(e)}")
+        await update.message.reply_text("Sorry, I couldn't generate the image. Please try again.")
 
 async def news_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     logger.info(f"Received /news command from user {update.effective_user.id}")
@@ -113,17 +110,15 @@ async def code_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 def setup_handlers():
     """Set up all command handlers for the bot"""
     from bot import bot
-    logger.info("Setting up command handlers...")
 
-    # Add message handler for direct messages
+    # Message handler must be added first
     bot.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
-    # Add command handlers
-    bot.add_handler(CommandHandler("start", start))
-    bot.add_handler(CommandHandler("help", help_command))
-    bot.add_handler(CommandHandler("chat", chat_command))
+    # Then add command handlers
     bot.add_handler(CommandHandler("image", image_command))
     bot.add_handler(CommandHandler("news", news_command))
     bot.add_handler(CommandHandler("code", code_command))
+    bot.add_handler(CommandHandler("help", help_command))
+    bot.add_handler(CommandHandler("start", start))
 
     logger.info("Command handlers setup completed")
