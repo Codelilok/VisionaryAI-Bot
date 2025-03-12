@@ -45,19 +45,6 @@ def index():
         ]
     })
 
-def start_bot_thread():
-    """Start the bot in a separate thread with its own event loop"""
-    import asyncio
-    from bot import start_bot
-    
-    # Create new event loop for this thread
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    
-    # Run the bot until complete
-    loop.run_until_complete(start_bot())
-    loop.run_forever()
-
 if __name__ == "__main__":
     # Start the Flask app
     app.run(host="0.0.0.0", port=5000)
