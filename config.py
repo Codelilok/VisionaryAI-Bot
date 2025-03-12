@@ -28,7 +28,9 @@ RATE_LIMIT = {
     "text": 30,
     "image": 10,
     "news": 100,
-    "code": 20
+    "code": 20,
+    "weather": 30,
+    "translate": 25
 }
 
 # Queue Settings

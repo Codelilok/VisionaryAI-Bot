@@ -33,6 +33,8 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "🎨 /image [prompt] - Generate an image\n"
         "📰 /news [topic] - Get latest news\n"
         "💻 /code [query] - Get coding help\n"
+        "🌦 /weather [location] - Get weather forecast\n"
+        "🌐 /translate [lang] [text] - Translate text\n"
         "❓ /help - Show this help message\n\n"
         "Try saying Hello!"
     )
@@ -108,6 +110,45 @@ async def code_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         logger.error(f"Error in code command for user {update.effective_user.id}: {str(e)}")
         await update.message.reply_text("Sorry, I couldn't process your code question. Please try again later.")
 
+async def weather_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Get weather for a location"""
+    logger.info(f"Received /weather command from user {update.effective_user.id}")
+    if not context.args:
+        await update.message.reply_text("Please provide a location! Example: /weather London")
+        return
+
+    location = ' '.join(context.args)
+    await update.message.reply_text("Checking weather... 🌦")
+
+    try:
+        from bot.services.weather_service import get_weather
+        weather_info = await queue_manager.enqueue('weather', get_weather, location)
+        await update.message.reply_text(weather_info, parse_mode='HTML')
+        logger.info(f"Successfully sent weather info for {location} to user {update.effective_user.id}")
+    except Exception as e:
+        logger.error(f"Error in weather command for user {update.effective_user.id}: {str(e)}")
+        await update.message.reply_text("Sorry, I couldn't get the weather information.")
+
+async def translate_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Translate text to another language"""
+    logger.info(f"Received /translate command from user {update.effective_user.id}")
+    if not context.args or len(context.args) < 2:
+        await update.message.reply_text("Please provide a target language and text! Example: /translate fr Hello world")
+        return
+
+    target_lang = context.args[0].lower()
+    text = ' '.join(context.args[1:])
+    await update.message.reply_text("Translating... 🌐")
+
+    try:
+        from bot.services.translate_service import translate_text
+        translated = await queue_manager.enqueue('translate', translate_text, text, target_lang)
+        await update.message.reply_text(translated, parse_mode='HTML')
+        logger.info(f"Successfully sent translation to user {update.effective_user.id}")
+    except Exception as e:
+        logger.error(f"Error in translate command for user {update.effective_user.id}: {str(e)}")
+        await update.message.reply_text("Sorry, I couldn't translate your text.")
+
 def setup_handlers():
     """Set up all command handlers for the bot"""
     from bot import bot
@@ -119,6 +160,8 @@ def setup_handlers():
     bot.add_handler(CommandHandler("image", image_command))
     bot.add_handler(CommandHandler("news", news_command))
     bot.add_handler(CommandHandler("code", code_command))
+    bot.add_handler(CommandHandler("weather", weather_command))
+    bot.add_handler(CommandHandler("translate", translate_command))
     bot.add_handler(CommandHandler("help", help_command))
     bot.add_handler(CommandHandler("start", start))
 
