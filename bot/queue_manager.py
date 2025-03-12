@@ -1,3 +1,4 @@
+
 import asyncio
 from collections import defaultdict
 import time
@@ -5,35 +6,42 @@ from config import RATE_LIMIT, MAX_QUEUE_SIZE, QUEUE_TIMEOUT, logger
 
 class QueueManager:
     def __init__(self):
-        self.queues = defaultdict(asyncio.Queue)
-        self.last_request_time = defaultdict(lambda: defaultdict(float))
+        self.queues = {
+            'text': asyncio.Queue(maxsize=MAX_QUEUE_SIZE),
+            'image': asyncio.Queue(maxsize=MAX_QUEUE_SIZE),
+            'news': asyncio.Queue(maxsize=MAX_QUEUE_SIZE),
+            'code': asyncio.Queue(maxsize=MAX_QUEUE_SIZE)
+        }
         self.request_counts = defaultdict(int)
-
-    async def enqueue(self, service_type, func, *args, **kwargs):
-        if self.queues[service_type].qsize() >= MAX_QUEUE_SIZE:
-            raise Exception("Queue is full. Please try again later.")
-
-        current_time = time.time()
-        # Clean up old request counts
-        self._cleanup_request_counts(service_type, current_time)
-
-        # Check rate limit
-        if self.request_counts[service_type] >= RATE_LIMIT[service_type]:
-            raise Exception(f"Rate limit exceeded for {service_type}. Please try again later.")
-
-        # Add to queue
-        future = asyncio.Future()
-        await self.queues[service_type].put((func, args, kwargs, future, current_time))
+        self.last_request_time = defaultdict(dict)
         
-        # Process queue
+    async def enqueue(self, service_type, func, *args, **kwargs):
+        """Add a request to the queue and return the result when processed"""
+        # Check rate limiting
+        current_time = time.time()
+        self._cleanup_request_counts(service_type, current_time)
+        
+        if self.request_counts[service_type] >= RATE_LIMIT.get(service_type, 30):
+            raise Exception(f"Rate limit exceeded for {service_type} service")
+        
+        # Create future to get result
+        future = asyncio.Future()
+        
+        # Add to queue
+        try:
+            self.queues[service_type].put_nowait((func, args, kwargs, future, current_time))
+        except asyncio.QueueFull:
+            raise Exception(f"Queue is full for {service_type} service")
+        
+        # Start processing if not already running
         asyncio.create_task(self._process_queue(service_type))
         
+        # Wait for result with timeout
         try:
-            result = await asyncio.wait_for(future, timeout=QUEUE_TIMEOUT)
-            return result
+            return await asyncio.wait_for(future, timeout=QUEUE_TIMEOUT)
         except asyncio.TimeoutError:
-            raise Exception("Request timed out. Please try again.")
-
+            raise Exception("Request timed out")
+    
     async def _process_queue(self, service_type):
         while not self.queues[service_type].empty():
             func, args, kwargs, future, enqueue_time = await self.queues[service_type].get()
