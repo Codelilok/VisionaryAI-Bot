@@ -106,6 +106,17 @@ async def code_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     except Exception as e:
         logger.error(f"Error in code command for user {update.effective_user.id}: {str(e)}")
         await update.message.reply_text("Sorry, I couldn't process your code question.")
+        return
+    
+    query = ' '.join(context.args)
+    await update.message.reply_text("Processing your code question... This may take a moment.")
+    
+    try:
+        code_response = await get_code_assistance(query)
+        await update.message.reply_text(f"```\n{code_response}\n```")
+    except Exception as e:
+        logger.error(f"Error in code command: {str(e)}")
+        await update.message.reply_text("Sorry, I couldn't process your code question. Please try again later.")
 
 def setup_handlers():
     """Set up all command handlers for the bot"""
