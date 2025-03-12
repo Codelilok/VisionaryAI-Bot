@@ -19,17 +19,18 @@ def webhook():
         update = request.json  # Get the update from Telegram
         print(update)  # Log for debugging
 
-        if "message" in update:
+        if "message" in update and "text" in update["message"]:
             chat_id = update["message"]["chat"]["id"]
-            text = update["message"]["text"]
+            user_message = update["message"]["text"]
 
-            # Send a reply back to the user
-            reply_text = f"You said: {text}"
-            payload = {"chat_id": chat_id, "text": reply_text}
-            requests.post(TELEGRAM_API_URL, json=payload)
+            # Prepare the response
+            response_text = f"Hello, you said: {user_message}"
+
+            # Send reply to Telegram
+            send_message(chat_id, response_text)
 
         return jsonify({"status": "received"}), 200
-
+    
     return jsonify({
         "name": "VisionaryAI Bot",
         "status": "running",
@@ -41,6 +42,12 @@ def webhook():
         ]
     })
 
+def send_message(chat_id, text):
+    """Send message to Telegram chat"""
+    payload = {"chat_id": chat_id, "text": text}
+    response = requests.post(TELEGRAM_API_URL, json=payload)
+    print(response.json())  # Log response for debugging
+
 if __name__ == "__main__":
-    port = int(os.getenv("PORT", 10000))  # Ensure correct port for Render
+    port = int(os.getenv("PORT", 10000))  # Use Render's assigned port
     app.run(host="0.0.0.0", port=port)
