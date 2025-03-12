@@ -27,8 +27,7 @@ CODE_MODEL = "bigcode/starcoder"
 WEATHER_API_KEY = os.environ.get("WEATHER_API_KEY", "cd95bfc489f09469cb862762755b86bd")  # User's API key
 WEATHER_API_URL = "https://api.openweathermap.org/data/2.5/weather"
 
-# Currency API
-CURRENCY_API_KEY = os.environ.get("CURRENCY_API_KEY", "")  # Will need to be set
+# Currency API - using a free API that doesn't require a key
 
 # Rate Limits (requests per minute)
 RATE_LIMIT = {

@@ -4,8 +4,8 @@ import html
 from datetime import datetime
 from config import logger, CURRENCY_API_KEY
 
-# Currency API endpoint for real-time data
-CURRENCY_API_URL = "https://api.apilayer.com/exchangerates_data/convert"
+# Currency API endpoint for free API (No key required)
+CURRENCY_API_URL = "https://api.exchangerate.host/convert"
 
 async def convert_currency(amount: str, from_currency: str, to_currency: str) -> str:
     """Convert currency from one type to another using real-time rates"""
@@ -20,19 +20,15 @@ async def convert_currency(amount: str, from_currency: str, to_currency: str) ->
         from_currency = from_currency.upper()
         to_currency = to_currency.upper()
 
-        # Make API request with API key
+        # Make API request - using free API that doesn't require a key
         async with aiohttp.ClientSession() as session:
-            headers = {
-                "apikey": CURRENCY_API_KEY
-            }
-            
             params = {
                 "from": from_currency,
                 "to": to_currency,
                 "amount": amount_float
             }
             
-            async with session.get(CURRENCY_API_URL, headers=headers, params=params) as response:
+            async with session.get(CURRENCY_API_URL, params=params) as response:
                 if response.status != 200:
                     # Fallback for GHS specifically (hard-coded recent rate)
                     if to_currency == "GHS" and from_currency == "USD":
@@ -62,7 +58,9 @@ async def convert_currency(amount: str, from_currency: str, to_currency: str) ->
                 else:
                     # Get the exchange rate and result from API
                     converted_amount = data.get("result", 0)
-                    rate = converted_amount / amount_float
+                    rate = data.get("info", {}).get("rate", 0)
+                    if not rate and converted_amount:
+                        rate = converted_amount / amount_float
                 
                 # Format response
                 result = (
@@ -79,7 +77,7 @@ async def convert_currency(amount: str, from_currency: str, to_currency: str) ->
         logger.error(f"Error in currency conversion: {str(e)}")
         
         # Fallback for GHS specifically
-        if to_currency == "GHS" and from_currency == "USD":
+        if to_currency.upper() == "GHS" and from_currency.upper() == "USD":
             try:
                 amount_float = float(amount)
                 rate = 15.50
