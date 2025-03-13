@@ -9,8 +9,8 @@ logging.basicConfig(level=logging.INFO)
 # Initialize Flask app
 app = Flask(__name__)
 
-# Replace with your actual bot token
-BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")  # Use environment variable
+# Get bot token from environment variable
+BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 TELEGRAM_API_URL = f"https://api.telegram.org/bot{BOT_TOKEN}"
 
 @app.route('/health', methods=['GET'])
@@ -32,7 +32,7 @@ def index():
         ]
     })
 
-@app.route(f"/{BOT_TOKEN}", methods=['POST'])
+@app.route("/webhook", methods=['POST'])  # Static path for webhook
 def receive_update():
     """Handles Telegram webhook updates"""
     try:
