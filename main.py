@@ -54,10 +54,18 @@ def receive_update():
         return jsonify({"status": "error", "message": str(e)}), 500
 
 def send_message(chat_id, text):
-    """Send a message to a Telegram user"""
+    """Send a message to a Telegram user with debugging"""
+    print(f"Sending message to {chat_id}: {text}")  # Debugging
     url = f"{TELEGRAM_API_URL}/sendMessage"
     payload = {"chat_id": chat_id, "text": text}
-    requests.post(url, json=payload)
+    
+    try:
+        response = requests.post(url, json=payload)
+        response_data = response.json()
+        print(f"Response: {response_data}")  # Print API response
+        logging.info(f"Message sent to {chat_id}: {response_data}")
+    except Exception as e:
+        logging.error(f"Failed to send message: {e}")
 
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 5000))  # Get Render’s assigned port
