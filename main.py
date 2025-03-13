@@ -10,7 +10,7 @@ logging.basicConfig(level=logging.INFO)
 app = Flask(__name__)
 
 # Replace with your actual bot token
-BOT_TOKEN = "YOUR_BOT_TOKEN"
+BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")  # Use environment variable
 TELEGRAM_API_URL = f"https://api.telegram.org/bot{BOT_TOKEN}"
 
 @app.route('/health', methods=['GET'])
@@ -60,4 +60,5 @@ def send_message(chat_id, text):
     requests.post(url, json=payload)
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=443)
+    port = int(os.getenv("PORT", 5000))  # Get Render’s assigned port
+    app.run(host="0.0.0.0", port=port)
